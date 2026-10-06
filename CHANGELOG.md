@@ -1,6 +1,6 @@
 # Changelog
 
-What changes in Search from one version to the next, newest first.
+What changes in AETHER from one version to the next, newest first.
 
 **Unreleased** gathers what is done since the last version, as it lands:
 every fix and every addition gets its line the day it is merged. When a
@@ -38,7 +38,11 @@ in [ROADMAP.md](ROADMAP.md).
 - **Security & Protocol Badges**: Integrated color-coded security indicator pill inside the Omnibox providing live protocol status (green TLS lock for HTTPS, warning for HTTP, ocean badge for local file URLs, and system sparkles for internal views).
 - **Hibernate Tab Action**: Added explicit "Hibernate Tab (Sleep)" action to tab context menus.
 
-### Added
+---
+
+## Carried over from Search
+
+These were already in the codebase when AETHER was built from it. They ship with every 0.0.x release but were never announced under the AETHER name.
 
 - Close Group, in a tab group's menu, closes the group and every tab in it. ⇧⌘T brings them back one by one, into the same group, named as it was. Asked for by email
 - Pinned rows, as in Arc: with the tabs down the side, a pin can be a row under the squares instead of a square. The squares are for the sites you live in, the rows for pages you keep, and a line sets them apart from the tabs that come and go. Right-click a tab and choose Pin as Row, or Show as Row and Show as Square on a pin you have. A row is a pin in every other way: ⌘W puts it down rather than closing it, it's the same in every window, and Back to Pinned Page in its menu takes it home. Clear, at the end of the line under the pointer, closes the tabs below it; pins and tab groups stay, and one ⇧⌘T brings back everything it closed, each tab in its place and the one you were on in front. Turned off, rows are drawn as squares and come back when it's on again. Off unless you turn it on in Settings › Tabs › Pinned rows. Thanks [@oddharsh](https://github.com/oddharsh) ([#426](https://github.com/driceroland/Search/pull/426), [#183](https://github.com/driceroland/Search/issues/183))
