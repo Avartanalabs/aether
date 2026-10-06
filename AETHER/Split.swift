@@ -119,3 +119,12 @@ struct TabSplit: Identifiable, Equatable {
     }
 
 }
+
+extension TabSplit {
+    /// Modern spatial multi-pane interactive gutter parameters.
+    /// Default interactive gutter width for multi-pane split view (7 pt to accommodate rounded pill handle).
+    static let defaultGutter: CGFloat = 7
+    /// Pill grab handle dimensions for interactive gutters.
+    static let grabHandleWidth: CGFloat = 4
+    static let grabHandleHeight: CGFloat = 36
+}
