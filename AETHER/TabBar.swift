@@ -300,15 +300,23 @@ struct TabBar: View {
         pill: Namespace.ID
     ) -> some View {
         let pair = browser.prefs.splitView ? splits.first(where: { $0.left == tab.id }) : nil
-        if let pair, let right = tabs.first(where: { $0.id == pair.right }) {
-            let editingPair = browser.editingTab == tab.id || browser.editingTab == right.id
-            let pairedWidth = splitItemWidth(base: width)
-            let displayedWidth = interactive && editingPair ? min(340, room) : pairedWidth
-            SplitTabItem(browser: browser, prefs: browser.prefs, left: tab, right: right,
-                         width: displayedWidth, height: height,
-                         live: activeID.map { pair.contains($0) } ?? false,
-                         focusedID: activeID,
-                         interactive: interactive, pill: pill)
+        if let pair {
+            let splitTabs = pair.tabs.compactMap { id in tabs.first(where: { $0.id == id }) }
+            if splitTabs.count > 1 {
+                let editingPair = splitTabs.contains(where: { browser.editingTab == $0.id })
+                let extra = (splitItemWidth(base: width) - width) * CGFloat(splitTabs.count - 1)
+                let pairedWidth = width + extra
+                let displayedWidth = interactive && editingPair ? min(340 + CGFloat(splitTabs.count - 2) * 80, room) : pairedWidth
+                SplitTabItem(browser: browser, prefs: browser.prefs, tabs: splitTabs,
+                             width: displayedWidth, height: height,
+                             live: activeID.map { pair.contains($0) } ?? false,
+                             focusedID: activeID,
+                             interactive: interactive, pill: pill)
+            } else {
+                TabPill(browser: browser, prefs: browser.prefs, tab: tab,
+                        live: tab.id == activeID, width: width, room: room, pill: pill,
+                        close: interactive ? { browser.close(tab) } : {})
+            }
         } else {
             TabPill(browser: browser, prefs: browser.prefs, tab: tab,
                     live: tab.id == activeID, width: width, room: room, pill: pill,
@@ -418,8 +426,9 @@ struct TabBar: View {
         guard browser.prefs.splitView else { return 0 }
         let ids = Set(tabs.map(\.id))
         return splits.reduce(CGFloat.zero) { total, pair in
-            guard pair.left != pair.right, ids.contains(pair.left) else { return total }
-            return total + splitItemWidth(base: base) - base
+            let present = pair.tabs.filter { ids.contains($0) }
+            guard present.count > 1 else { return total }
+            return total + (splitItemWidth(base: base) - base) * CGFloat(present.count - 1)
         }
     }
 }
@@ -792,8 +801,8 @@ struct Carried: ViewModifier {
                             let finished = TabDrag.shared.finish(browser: browser, tab: tab)
                             let source = finished.source
                             switch finished.drop {
-                            case .stage(let target, let onLeft):
-                                browser.pair(source, with: target, onLeft: onLeft)
+                            case .stage(let target, let zone):
+                                browser.dock(source, with: target, zone: zone)
                             case .strip(let target):
                                 browser.dropTabIntoStrip(source, before: target)
                                 if let onDropTab { onDropTab(source, value.location) }

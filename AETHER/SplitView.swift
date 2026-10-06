@@ -42,14 +42,44 @@ struct SplitStage: View {
                 }
             }
             if let preview = drag.preview, preview.browserID == ObjectIdentifier(browser) {
+                VisualDockZones(hoveredZone: preview.zone)
+                    .transition(.opacity)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
                 SplitDropPreview(preview: preview, tabs: browser.tabs)
                     .transition(.opacity)
                     .allowsHitTesting(false)
                     .accessibilityHidden(true)
+            } else if drag.isDragging {
+                VisualDockZones(hoveredZone: nil)
+                    .transition(.opacity)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+            }
+
+            if browser.syncScrollEnabled, browser.activeSplit != nil {
+                HStack(spacing: 7) {
+                    Image(systemName: "arrow.up.and.down.and.arrow.left.and.right")
+                        .font(.system(size: 11, weight: .semibold))
+                    Text("Synchronized Scrolling Active")
+                        .font(.system(size: 11.5, weight: .medium))
+                }
+                .foregroundStyle(Palette.accent)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(.ultraThinMaterial, in: Capsule())
+                .overlay(Capsule().strokeBorder(Palette.accent.opacity(0.4), lineWidth: 1))
+                .shadow(color: Palette.accent.opacity(0.18), radius: 8, x: 0, y: 3)
+                .padding(.bottom, 16)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                .allowsHitTesting(false)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .animation(Motion.quick, value: drag.preview)
+        .animation(Motion.quick, value: drag.isDragging)
+        .animation(Motion.quick, value: browser.syncScrollEnabled)
     }
 }
 
@@ -149,6 +179,68 @@ private struct PaneLayers: View {
     }
 }
 
+/// Subtle ethereal dock zones rendered when dragging tabs towards screen corners or edges.
+struct VisualDockZones: View {
+    var hoveredZone: TabDrag.DockZone? = nil
+
+    var body: some View {
+        GeometryReader { proxy in
+            let cornerSize: CGFloat = max(110, min(proxy.size.width, proxy.size.height) * 0.22)
+            ZStack {
+                // Top-Left Corner Dock Pad
+                dockPad(icon: "square.grid.2x2", title: "Quad Top-Left", active: hoveredZone == .topLeft)
+                    .frame(width: cornerSize, height: cornerSize)
+                    .position(x: cornerSize / 2 + 12, y: cornerSize / 2 + 12)
+
+                // Top-Right Corner Dock Pad
+                dockPad(icon: "square.grid.2x2", title: "Quad Top-Right", active: hoveredZone == .topRight)
+                    .frame(width: cornerSize, height: cornerSize)
+                    .position(x: proxy.size.width - cornerSize / 2 - 12, y: cornerSize / 2 + 12)
+
+                // Bottom-Left Corner Dock Pad
+                dockPad(icon: "square.grid.2x2", title: "Quad Bottom-Left", active: hoveredZone == .bottomLeft)
+                    .frame(width: cornerSize, height: cornerSize)
+                    .position(x: cornerSize / 2 + 12, y: proxy.size.height - cornerSize / 2 - 12)
+
+                // Bottom-Right Corner Dock Pad
+                dockPad(icon: "square.grid.2x2", title: "Quad Bottom-Right", active: hoveredZone == .bottomRight)
+                    .frame(width: cornerSize, height: cornerSize)
+                    .position(x: proxy.size.width - cornerSize / 2 - 12, y: proxy.size.height - cornerSize / 2 - 12)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    private func dockPad(icon: String, title: String, active: Bool) -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: active
+                            ? [Palette.accent.opacity(0.22), Palette.purple.opacity(0.14)]
+                            : [Palette.accent.opacity(0.05), Palette.ground.opacity(0.25)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .strokeBorder(
+                    active ? Palette.accent.opacity(0.65) : Palette.hairline.opacity(0.4),
+                    lineWidth: active ? 1.5 : 1
+                )
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 16, weight: .light))
+                    .foregroundStyle(active ? Palette.accent : Palette.muted)
+                Text(title)
+                    .font(.system(size: 10, weight: active ? .semibold : .regular))
+                    .foregroundStyle(active ? Palette.accent : Palette.muted)
+            }
+        }
+        .shadow(color: active ? Palette.accent.opacity(0.15) : .clear, radius: 8, x: 0, y: 2)
+    }
+}
+
 private struct SplitDropPreview: View {
     let preview: TabDrag.Preview
     let tabs: [Tab]
@@ -160,26 +252,97 @@ private struct SplitDropPreview: View {
     }
 
     var body: some View {
-        HStack(spacing: 2) {
-            half(title: preview.side == .left ? carried : target?.label ?? "Page", proposed: preview.side == .left)
-            half(title: preview.side == .right ? carried : target?.label ?? "Page", proposed: preview.side == .right)
+        Group {
+            if preview.zone.isCorner {
+                quadGrid
+            } else if preview.zone == .top || preview.zone == .bottom {
+                verticalSplit
+            } else {
+                horizontalSplit
+            }
         }
         .padding(10)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Palette.ground.opacity(0.12))
     }
 
-    private func half(title: String, proposed: Bool) -> some View {
+    private var horizontalSplit: some View {
+        HStack(spacing: 4) {
+            pane(title: preview.side == .left ? carried : target?.label ?? "Page",
+                 icon: "rectangle.split.2x1",
+                 subtitle: preview.side == .left ? "Docked Tab" : "Existing Pane",
+                 proposed: preview.side == .left)
+            pane(title: preview.side == .right ? carried : target?.label ?? "Page",
+                 icon: "rectangle.split.2x1",
+                 subtitle: preview.side == .right ? "Docked Tab" : "Existing Pane",
+                 proposed: preview.side == .right)
+        }
+    }
+
+    private var verticalSplit: some View {
+        VStack(spacing: 4) {
+            pane(title: preview.zone == .top ? carried : target?.label ?? "Page",
+                 icon: "rectangle.split.1x2",
+                 subtitle: preview.zone == .top ? "Docked Tab" : "Existing Pane",
+                 proposed: preview.zone == .top)
+            pane(title: preview.zone == .bottom ? carried : target?.label ?? "Page",
+                 icon: "rectangle.split.1x2",
+                 subtitle: preview.zone == .bottom ? "Docked Tab" : "Existing Pane",
+                 proposed: preview.zone == .bottom)
+        }
+    }
+
+    private var quadGrid: some View {
+        VStack(spacing: 4) {
+            HStack(spacing: 4) {
+                quadPane(zone: .topLeft, label: "Top-Left")
+                quadPane(zone: .topRight, label: "Top-Right")
+            }
+            HStack(spacing: 4) {
+                quadPane(zone: .bottomLeft, label: "Bottom-Left")
+                quadPane(zone: .bottomRight, label: "Bottom-Right")
+            }
+        }
+    }
+
+    private func quadPane(zone: TabDrag.DockZone, label: String) -> some View {
+        let proposed = preview.zone == zone
+        let title = proposed ? carried : (target?.label ?? label)
+        return pane(title: title,
+                    icon: "square.grid.2x2",
+                    subtitle: proposed ? "Quad Dock Zone" : label,
+                    proposed: proposed)
+    }
+
+    private func pane(title: String, icon: String, subtitle: String, proposed: Bool) -> some View {
         ZStack {
-            Rectangle().fill(proposed ? Palette.ink.opacity(0.06) : Palette.ground.opacity(0.42))
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(proposed ? Palette.ink.opacity(0.3) : Palette.ink.opacity(0.12), lineWidth: 1)
-                .padding(6)
-            Text(title.isEmpty ? "New Tab" : title)
-                .font(.system(size: 13, weight: proposed ? .medium : .regular))
-                .foregroundStyle(Palette.ink.opacity(proposed ? 0.78 : 0.48))
-                .lineLimit(1)
-                .padding(.horizontal, 20)
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(
+                    proposed
+                        ? LinearGradient(colors: [Palette.accent.opacity(0.18), Palette.purple.opacity(0.10)],
+                                         startPoint: .topLeading, endPoint: .bottomTrailing)
+                        : LinearGradient(colors: [Palette.ground.opacity(0.42), Palette.ground.opacity(0.35)],
+                                         startPoint: .topLeading, endPoint: .bottomTrailing)
+                )
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(
+                    proposed ? Palette.accent.opacity(0.65) : Palette.hairline.opacity(0.35),
+                    lineWidth: proposed ? 1.5 : 1
+                )
+                .padding(2)
+            VStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 18, weight: proposed ? .semibold : .regular))
+                    .foregroundStyle(proposed ? Palette.accent : Palette.muted)
+                Text(title.isEmpty ? "New Tab" : title)
+                    .font(.system(size: 13, weight: proposed ? .medium : .regular))
+                    .foregroundStyle(Palette.ink.opacity(proposed ? 0.90 : 0.50))
+                    .lineLimit(1)
+                    .padding(.horizontal, 16)
+                Text(subtitle)
+                    .font(.system(size: 10, weight: .regular))
+                    .foregroundStyle(Palette.muted)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

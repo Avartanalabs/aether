@@ -43,6 +43,8 @@ final class Browser: NSObject, ObservableObject {
         didSet { arrangeGroupedTabs() }
     }
     @Published private(set) var splits: [TabSplit] = []
+    @Published var syncScrollEnabled: Bool = false
+    private var isSyncingScroll: Bool = false
     /// Named tab sections in the current space, in display order.
     @Published var tabGroups: [TabGroup] = []
     @Published var editingGroupID: UUID?
@@ -2260,6 +2262,227 @@ final class Browser: NSObject, ObservableObject {
         return copy
     }
 
+
+    // MARK: - Synchronized Scrolling Mode
+
+    func toggleSyncScroll() {
+        guard prefs.splitView, activeSplit != nil else {
+            syncScrollEnabled = false
+            return
+        }
+        syncScrollEnabled.toggle()
+        if syncScrollEnabled {
+            syncScrollFromActive()
+        }
+    }
+
+    func syncScroll(from sourceTabID: Tab.ID, deltaX: CGFloat = 0, deltaY: CGFloat = 0, event: NSEvent? = nil) {
+        guard syncScrollEnabled, !isSyncingScroll, let split = activeSplit, split.contains(sourceTabID) else { return }
+        isSyncingScroll = true
+        defer { isSyncingScroll = false }
+
+        let siblings = split.tabs.filter { $0 != sourceTabID }
+        for sibID in siblings {
+            guard let sibTab = tabs.first(where: { $0.id == sibID }) else { continue }
+            if let event {
+                sibTab.web.scrollWheel(with: event)
+            } else if deltaY != 0 || deltaX != 0 {
+                let script = "window.scrollBy({ left: \(deltaX), top: \(deltaY), behavior: 'instant' })"
+                sibTab.web.evaluateJavaScript(script, completionHandler: nil)
+            }
+        }
+    }
+
+    func syncScrollFromActive() {
+        guard let active = active, let split = activeSplit, split.contains(active.id) else { return }
+        let readScript = "({ x: window.scrollX, y: window.scrollY })"
+        active.web.evaluateJavaScript(readScript) { [weak self] res, _ in
+            guard let self, let dict = res as? [String: Any],
+                  let x = dict["x"] as? Double,
+                  let y = dict["y"] as? Double else { return }
+            let writeScript = "window.scrollTo({ left: \(x), top: \(y), behavior: 'instant' })"
+            for sibID in split.tabs where sibID != active.id {
+                if let sibTab = self.tabs.first(where: { $0.id == sibID }) {
+                    sibTab.web.evaluateJavaScript(writeScript, completionHandler: nil)
+                }
+            }
+        }
+    }
+
+    // MARK: - Multi-Pane Split Layout (2 Panes, 3 Panes, 4-Pane Quad Grid)
+
+    func setSplitCount(_ targetCount: Int) {
+        guard prefs.splitView, let current = active, !current.bench else { return }
+        guard targetCount >= 2 && targetCount <= 4 else { return }
+
+        if floating == current.id { land() }
+        let baseTab = splittable(current)
+
+        if let existing = activeSplit, let splitIndex = splits.firstIndex(where: { $0.id == existing.id }) {
+            let currentCount = existing.tabs.count
+            if currentCount == targetCount {
+                evenSplit()
+                return
+            }
+
+            var updatedSplit = existing
+            if currentCount < targetCount {
+                let needed = targetCount - currentCount
+                var newTabs: [Tab] = []
+                for _ in 0..<needed {
+                    let tab = Tab(shy: baseTab.shy,
+                                  configuration: baseTab.shy ? Web.configuration(shy: true, store: baseTab.store)
+                                      : Web.configuration(space: spaceID))
+                    prepare(tab)
+                    tab.groupID = baseTab.groupID
+                    newTabs.append(tab)
+                }
+                if let lastMemberIndex = tabs.lastIndex(where: { existing.tabs.contains($0.id) }) {
+                    tabs.insert(contentsOf: newTabs, at: lastMemberIndex + 1)
+                } else {
+                    tabs.append(contentsOf: newTabs)
+                }
+                updatedSplit.tabs.append(contentsOf: newTabs.map(\.id))
+                updatedSplit.sizes = TabSplit.even(targetCount)
+                splits[splitIndex] = updatedSplit
+                focusPane(current)
+            } else {
+                let keepIDs = Array(existing.tabs.prefix(targetCount))
+                updatedSplit.tabs = keepIDs
+                updatedSplit.sizes = TabSplit.even(targetCount)
+                if let focused = updatedSplit.focused, !keepIDs.contains(focused) {
+                    updatedSplit.focused = keepIDs.first
+                }
+                splits[splitIndex] = updatedSplit
+                if let focusID = updatedSplit.focused, let focusTab = tabs.first(where: { $0.id == focusID }) {
+                    focusPane(focusTab)
+                }
+            }
+            rememberSession()
+        } else {
+            var newTabs: [Tab] = [baseTab]
+            for _ in 1..<targetCount {
+                let tab = Tab(shy: baseTab.shy,
+                              configuration: baseTab.shy ? Web.configuration(shy: true, store: baseTab.store)
+                                  : Web.configuration(space: spaceID))
+                prepare(tab)
+                tab.groupID = baseTab.groupID
+                newTabs.append(tab)
+            }
+            if let baseIndex = tabs.firstIndex(where: { $0.id == baseTab.id }) {
+                tabs.insert(contentsOf: newTabs.dropFirst(), at: baseIndex + 1)
+            } else {
+                tabs.append(contentsOf: newTabs.dropFirst())
+            }
+            let tabIDs = newTabs.map(\.id)
+            let newSplit = TabSplit(tabs: tabIDs, axis: .horizontal, sizes: TabSplit.even(targetCount), focused: baseTab.id)
+            splits.append(newSplit)
+            focusPane(baseTab)
+            rememberSession()
+        }
+    }
+
+    // MARK: - Visual Drag-to-Dock Zones
+
+    func pairVertical(_ dragged: Tab, with target: Tab, onTop: Bool) {
+        guard canSplit(dragged, with: target) else { return }
+        if floating == dragged.id || floating == target.id { land() }
+        let dragged = splittable(dragged)
+        let target = splittable(target)
+        detachSplit(dragged)
+        detachSplit(target)
+        let oldGroup = dragged.groupID
+        dragged.groupID = target.groupID
+        var row = tabs.filter { $0.id != dragged.id }
+        guard let index = row.firstIndex(where: { $0.id == target.id }) else { return }
+        row.insert(dragged, at: onTop ? index : index + 1)
+        let top = onTop ? dragged : target
+        let bottom = onTop ? target : dragged
+        splits.append(TabSplit(tabs: [top.id, bottom.id], axis: .vertical, sizes: TabSplit.even(2), focused: dragged.id))
+        tabs = row
+        removeEmptyGroup(oldGroup)
+        focusPane(dragged)
+        for pane in [top, bottom] where !pane.isBlank {
+            if !pane.wake() { pane.revive() }
+        }
+        rememberSession()
+    }
+
+    func dockQuad(_ dragged: Tab, with target: Tab, zone: TabDrag.DockZone) {
+        guard canSplit(dragged, with: target) else { return }
+        if floating == dragged.id || floating == target.id { land() }
+        let dragged = splittable(dragged)
+        let target = splittable(target)
+        detachSplit(dragged)
+
+        if let existing = split(for: target), let splitIndex = splits.firstIndex(where: { $0.id == existing.id }) {
+            var updated = existing
+            if !updated.tabs.contains(dragged.id) {
+                let targetIdx = min(zone.quadrantIndex, updated.tabs.count)
+                var currentTabs = updated.tabs
+                currentTabs.insert(dragged.id, at: targetIdx)
+                if currentTabs.count > 4 {
+                    currentTabs = Array(currentTabs.prefix(4))
+                }
+                updated.tabs = currentTabs
+                updated.sizes = TabSplit.even(currentTabs.count)
+            }
+            updated.focused = dragged.id
+            splits[splitIndex] = updated
+        } else {
+            var newTabs: [Tab] = []
+            for _ in 0..<2 {
+                let blank = Tab(shy: target.shy,
+                                configuration: target.shy ? Web.configuration(shy: true, store: target.store)
+                                    : Web.configuration(space: spaceID))
+                prepare(blank)
+                blank.groupID = target.groupID
+                newTabs.append(blank)
+            }
+            var allTabs: [Tab] = Array(repeating: target, count: 4)
+            let draggedSlot = zone.quadrantIndex
+            allTabs[draggedSlot] = dragged
+            let remainingSlots = [0, 1, 2, 3].filter { $0 != draggedSlot }
+            allTabs[remainingSlots[0]] = target
+            allTabs[remainingSlots[1]] = newTabs[0]
+            allTabs[remainingSlots[2]] = newTabs[1]
+
+            let oldGroup = dragged.groupID
+            dragged.groupID = target.groupID
+            var row = tabs.filter { $0.id != dragged.id }
+            if let idx = row.firstIndex(where: { $0.id == target.id }) {
+                row.insert(dragged, at: idx + 1)
+                row.insert(contentsOf: newTabs, at: idx + 2)
+            } else {
+                row.append(dragged)
+                row.append(contentsOf: newTabs)
+            }
+            splits.append(TabSplit(tabs: allTabs.map(\.id), axis: .horizontal, sizes: TabSplit.even(4), focused: dragged.id))
+            tabs = row
+            removeEmptyGroup(oldGroup)
+        }
+        focusPane(dragged)
+        if !dragged.isBlank {
+            if !dragged.wake() { dragged.revive() }
+        }
+        rememberSession()
+    }
+
+    func dock(_ dragged: Tab, with target: Tab, zone: TabDrag.DockZone) {
+        switch zone {
+        case .left:
+            pair(dragged, with: target, onLeft: true)
+        case .right:
+            pair(dragged, with: target, onLeft: false)
+        case .top:
+            pairVertical(dragged, with: target, onTop: true)
+        case .bottom:
+            pairVertical(dragged, with: target, onTop: false)
+        case .topLeft, .topRight, .bottomLeft, .bottomRight:
+            dockQuad(dragged, with: target, zone: zone)
+        }
+    }
+
     func pair(_ dragged: Tab, with target: Tab, onLeft: Bool) {
         guard canSplit(dragged, with: target) else { return }
         if floating == dragged.id || floating == target.id { land() }
@@ -2310,6 +2533,7 @@ final class Browser: NSObject, ObservableObject {
     func detachSplit(_ tab: Tab) {
         guard let index = splits.firstIndex(where: { $0.contains(tab.id) }) else { return }
         splits.remove(at: index)
+        if activeSplit == nil { syncScrollEnabled = false }
         rememberSession()
     }
 
@@ -2466,13 +2690,17 @@ final class Browser: NSObject, ObservableObject {
 
     /// The divider's menu › Even Out, or a double-click on it.
     func evenSplit() {
-        guard let pair = activeSplit else { return }
-        setSplitFraction(pair.id, fraction: 0.5)
+        guard let pair = activeSplit, let index = splits.firstIndex(where: { $0.id == pair.id }) else { return }
+        var updated = pair
+        updated.sizes = TabSplit.even(pair.tabs.count)
+        splits[index] = updated
+        rememberSession()
     }
 
     /// The divider's menu › Close Both.
     func closeSplit() {
         guard let pair = activeSplit else { return }
+        syncScrollEnabled = false
         let members = pair.tabs.compactMap { id in tabs.first { $0.id == id } }
         for tab in members { close(tab) }
     }
@@ -3752,6 +3980,10 @@ final class Browser: NSObject, ObservableObject {
         tab.onKeys = { [weak self] tab in
             guard let self, let pair = activeSplit, pair.contains(tab.id), activeID != tab.id else { return }
             focusPane(tab)
+        }
+        tab.onScrollWheel = { [weak self] tab, event in
+            guard let self else { return }
+            self.syncScroll(from: tab.id, deltaX: event.scrollingDeltaX, deltaY: event.scrollingDeltaY, event: event)
         }
         tab.onLink = { [weak self] tab, address in
             guard let self, prefs.showsLinks, visibleTabIDs.contains(tab.id) else { return }

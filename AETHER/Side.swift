@@ -312,13 +312,20 @@ struct SideBar: View {
         close: @escaping () -> Void
     ) -> some View {
         let pair = prefs.splitView ? splits.first(where: { $0.left == tab.id }) : nil
-        if let pair, let right = tabs.first(where: { $0.id == pair.right }) {
-            SplitTabItem(browser: browser, prefs: prefs, left: tab, right: right,
-                         width: nil, height: SideBar.row,
-                         live: activeID.map { pair.contains($0) } ?? false,
-                         focusedID: activeID,
-                         interactive: interactive, pill: pill)
-                .frame(maxWidth: .infinity)
+        if let pair {
+            let splitTabs = pair.tabs.compactMap { id in tabs.first(where: { $0.id == id }) }
+            if splitTabs.count > 1 {
+                SplitTabItem(browser: browser, prefs: prefs, tabs: splitTabs,
+                             width: nil, height: SideBar.row,
+                             live: activeID.map { pair.contains($0) } ?? false,
+                             focusedID: activeID,
+                             interactive: interactive, pill: pill)
+                    .frame(maxWidth: .infinity)
+            } else {
+                SideRow(browser: browser, prefs: prefs, tab: tab,
+                        live: tab.id == activeID, pill: pill, close: close,
+                        interactive: interactive)
+            }
         } else {
             SideRow(browser: browser, prefs: prefs, tab: tab,
                     live: tab.id == activeID, pill: pill, close: close,

@@ -335,7 +335,7 @@ final class PaneStage: NSView {
     /// it, and is still the page's click. Watched rather than taken: the
     /// click belongs to WebKit.
     private func watchClicks() {
-        let wanted = tabs.count == 2 && window != nil
+        let wanted = tabs.count >= 2 && window != nil
         if wanted, monitor == nil {
             monitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]) { [weak self] event in
                 self?.clicked(event)
@@ -403,9 +403,9 @@ final class PaneStage: NSView {
 final class FocusCue: NSView {
     override func hitTest(_ point: NSPoint) -> NSView? { nil }
     override func draw(_ dirtyRect: NSRect) {
-        Palette.NS.muted.withAlphaComponent(0.55).setStroke()
+        Palette.NS.accent.withAlphaComponent(0.65).setStroke()
         let line = NSBezierPath(rect: bounds.insetBy(dx: 0.5, dy: 0.5))
-        line.lineWidth = 1
+        line.lineWidth = 1.5
         line.stroke()
     }
 }
