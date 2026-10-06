@@ -68,7 +68,6 @@ Measured on this Mac (Apple Silicon, release build):
 | ![Tabs in a row](docs/screenshots/aether_tab_strip.png) | ![Tabs in the sidebar](docs/screenshots/aether_sidebar_column.png) |
 | Tabs in a row | Tabs down the side |
 
-![A page rendered by WebKit](docs/screenshots/aether_window_with_page.png)
 
 ## Building
 
