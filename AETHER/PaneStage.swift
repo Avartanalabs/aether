@@ -397,26 +397,60 @@ final class PaneStage: NSView {
     }
 }
 
-/// A hairline round the page the keys go to, with two pages up. Mid-grey,
-/// which shows on a white page and a dark one alike; drawn rather than a
-/// layer's border, so a picture of the window has it too. It takes no clicks.
+/// A glowing ocean-purple accent border surrounding the currently focused split pane,
+/// providing an unmistakable spatial halo so users immediately know which pane has keyboard focus.
+/// Drawn with an ethereal outer halo aura and crisp 1.5px ocean-purple accent border.
+/// Drawn rather than a layer's border, so a picture of the window has it too. It takes no clicks.
 final class FocusCue: NSView {
     override func hitTest(_ point: NSPoint) -> NSView? { nil }
+    override var isFlipped: Bool { true }
+
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        wantsLayer = true
+        layerContentsRedrawPolicy = .duringViewResize
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
     override func draw(_ dirtyRect: NSRect) {
-        Palette.NS.muted.withAlphaComponent(0.55).setStroke()
-        let line = NSBezierPath(rect: bounds.insetBy(dx: 0.5, dy: 0.5))
-        line.lineWidth = 1
-        line.stroke()
+        guard bounds.width > 3, bounds.height > 3 else { return }
+        guard let context = NSGraphicsContext.current?.cgContext else { return }
+
+        context.saveGState()
+
+        // 1. Soft glowing outer aura (radiant ocean-purple halo)
+        let haloGlow = Palette.NS.accent.withAlphaComponent(0.28)
+        haloGlow.setStroke()
+        let glowPath = NSBezierPath(rect: bounds.insetBy(dx: 1.0, dy: 1.0))
+        glowPath.lineWidth = 3.0
+        glowPath.stroke()
+
+        // 2. Crisp 1.5px ocean-purple accent border
+        let accentBorder = Palette.NS.accent.withAlphaComponent(0.92)
+        accentBorder.setStroke()
+        let borderPath = NSBezierPath(rect: bounds.insetBy(dx: 0.75, dy: 0.75))
+        borderPath.lineWidth = 1.5
+        borderPath.stroke()
+
+        context.restoreGState()
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        needsDisplay = true
     }
 }
 
-/// The line between two pages. A hairline in a narrow gutter, that grows a
-/// little under the pointer; dragged, the pages follow it; double-clicked,
-/// they are made even. It never takes the keys: the page keeps them.
+/// The interactive modern gutter between two pages. Replaces the plain 1px hairline
+/// with an interactive modern gutter featuring a subtle rounded pill grab handle and
+/// smooth hover states. Dragged, the pages follow it; double-clicked, they are made even.
+/// It never takes the keys: the page keeps them.
 final class PaneDivider: NSView {
     weak var stage: PaneStage?
 
-    private let line = CALayer()
+    private let track = CALayer()
+    private let pill = CALayer()
     private var hovering = false
     private var dwell: DispatchWorkItem?
     private var dragging = false
@@ -428,14 +462,20 @@ final class PaneDivider: NSView {
     override init(frame: NSRect) {
         super.init(frame: frame)
         wantsLayer = true
-        layer?.addSublayer(line)
-        line.actions = ["bounds": NSNull(), "position": NSNull()]
+        layer?.addSublayer(track)
+        layer?.addSublayer(pill)
+        track.actions = ["bounds": NSNull(), "position": NSNull(), "backgroundColor": NSNull()]
+        pill.actions = [
+            "bounds": NSNull(), "position": NSNull(), "backgroundColor": NSNull(),
+            "cornerRadius": NSNull(), "shadowOpacity": NSNull(), "shadowRadius": NSNull()
+        ]
+        updateVisuals()
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
     override func updateLayer() {
-        line.backgroundColor = (hovering || dragging ? Palette.NS.muted : Palette.NS.faint).cgColor
+        updateVisuals()
     }
 
     override func layout() {
@@ -444,18 +484,38 @@ final class PaneDivider: NSView {
     }
 
     private func place() {
-        let width: CGFloat = hovering || dragging ? 3 : 1
-        line.frame = CGRect(x: (bounds.width - width) / 2, y: 0, width: width, height: bounds.height)
-        line.cornerRadius = width / 2
+        let trackWidth: CGFloat = 1
+        track.frame = CGRect(x: (bounds.width - trackWidth) / 2, y: 0, width: trackWidth, height: bounds.height)
+
+        let pillWidth: CGFloat = hovering || dragging ? 4 : 3
+        let pillHeight: CGFloat = hovering || dragging ? 42 : 36
+        pill.frame = CGRect(
+            x: (bounds.width - pillWidth) / 2,
+            y: (bounds.height - pillHeight) / 2,
+            width: pillWidth,
+            height: pillHeight
+        )
+        pill.cornerRadius = pillWidth / 2
+    }
+
+    private func updateVisuals() {
+        let active = hovering || dragging
+        track.backgroundColor = (active ? Palette.NS.muted.withAlphaComponent(0.65) : Palette.NS.faint).cgColor
+
+        pill.backgroundColor = (active ? Palette.NS.accent : Palette.NS.muted.withAlphaComponent(0.42)).cgColor
+        pill.shadowColor = Palette.NS.accent.cgColor
+        pill.shadowOpacity = active ? (0.55 as Swift.Float) : (0.0 as Swift.Float)
+        pill.shadowRadius = active ? 4.0 : 0.0
+        pill.shadowOffset = .zero
     }
 
     private func light(_ on: Bool) {
         guard hovering != on else { return }
         hovering = on
         CATransaction.begin()
-        CATransaction.setAnimationDuration(Motion.reduced ? 0 : 0.14)
+        CATransaction.setAnimationDuration(Motion.reduced ? 0 : 0.16)
         place()
-        line.backgroundColor = (on || dragging ? Palette.NS.muted : Palette.NS.faint).cgColor
+        updateVisuals()
         CATransaction.commit()
     }
 
@@ -475,7 +535,7 @@ final class PaneDivider: NSView {
         dwell?.cancel()
         let work = DispatchWorkItem { [weak self] in self?.light(true) }
         dwell = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: work)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08, execute: work)
     }
 
     override func mouseExited(with event: NSEvent) {

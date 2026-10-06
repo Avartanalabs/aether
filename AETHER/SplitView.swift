@@ -347,3 +347,55 @@ private struct PaneQuestionCard: View {
         .opacity(ready ? 1 : 0.5)
     }
 }
+
+
+// MARK: - Interactive Modern Gutter
+
+/// An interactive modern gutter featuring a subtle rounded pill grab handle and smooth hover states.
+struct SplitGutter: View {
+    var axis: TabSplit.Axis = .horizontal
+    var isHovered: Bool = false
+    var isDragging: Bool = false
+
+    @State private var hovered: Bool = false
+
+    private var active: Bool { isHovered || isDragging || hovered }
+
+    var body: some View {
+        ZStack {
+            // Full-length subtle track
+            if axis == .horizontal {
+                Rectangle()
+                    .fill(active ? Palette.muted.opacity(0.65) : Palette.faint)
+                    .frame(width: 1)
+            } else {
+                Rectangle()
+                    .fill(active ? Palette.muted.opacity(0.65) : Palette.faint)
+                    .frame(height: 1)
+            }
+
+            // Interactive rounded pill grab handle
+            if axis == .horizontal {
+                Capsule()
+                    .fill(active ? Palette.accent : Palette.muted.opacity(0.42))
+                    .frame(width: active ? TabSplit.grabHandleWidth : 3,
+                           height: active ? 42 : TabSplit.grabHandleHeight)
+                    .shadow(color: active ? Palette.accent.opacity(0.5) : .clear, radius: 4)
+            } else {
+                Capsule()
+                    .fill(active ? Palette.accent : Palette.muted.opacity(0.42))
+                    .frame(width: active ? 42 : TabSplit.grabHandleHeight,
+                           height: active ? TabSplit.grabHandleWidth : 3)
+                    .shadow(color: active ? Palette.accent.opacity(0.5) : .clear, radius: 4)
+            }
+        }
+        .frame(width: axis == .horizontal ? TabSplit.defaultGutter : nil,
+               height: axis == .vertical ? TabSplit.defaultGutter : nil)
+        .contentShape(Rectangle())
+        .onHover { over in
+            withAnimation(Motion.quick) {
+                hovered = over
+            }
+        }
+    }
+}

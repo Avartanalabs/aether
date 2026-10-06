@@ -504,3 +504,23 @@ final class RestingLights: NSView {
     /// come back the moment the app does.
     override func hitTest(_ point: NSPoint) -> NSView? { nil }
 }
+
+
+// MARK: - Active Pane Glowing Halo
+
+/// An active pane glowing halo: a glowing 1.5px ocean-purple accent border surrounding
+/// the currently focused split pane, providing an unmistakable spatial halo so users
+/// immediately recognize keyboard focus.
+struct ActivePaneHalo: View {
+    var active: Bool = true
+
+    var body: some View {
+        if active {
+            RoundedRectangle(cornerRadius: 0)
+                .strokeBorder(Palette.accent.opacity(0.92), lineWidth: 1.5)
+                .shadow(color: Palette.accent.opacity(0.40), radius: 4, x: 0, y: 0)
+                .allowsHitTesting(false)
+                .transition(.opacity)
+        }
+    }
+}
