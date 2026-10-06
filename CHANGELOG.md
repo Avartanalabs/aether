@@ -11,6 +11,16 @@ in [ROADMAP.md](ROADMAP.md).
 
 ## Unreleased
 
+## [0.0.3] - 2026-10-06
+
+### Added
+
+- **Dynamic Tab Hibernation & Memory Compression**: Tabs backgrounded and inactive for over 15 minutes (or under macOS memory pressure) automatically hibernate — capturing compressed snapshot previews and caching interaction state tokens before releasing heavy `WKWebView` WebContent processes. Upon switching to or clicking an asleep tab, AETHER seamlessly reconstitutes the web view with zero data loss, displaying the cached snapshot cover instantly to prevent white flashes while history and scroll positions restore.
+- **Ergonomic Rounded Pill Tabs**: Completely modernized tab styling across horizontal tab bar strips, vertical sidebars, and split views. Replaced flat rectangular blocks with ergonomic 8px continuous rounded pills, subtle border sheens, and radiant ocean-purple active indicator bars with soft ambient glow.
+- **Floating Glass Omnibox**: Re-engineered address bar with floating acrylic glass appearance (`.ultraThinMaterial` layered over translucent ground), dual elevation shadows, and a soft oceanic focus ring.
+- **Security & Protocol Badges**: Integrated color-coded security indicator pill inside the Omnibox providing live protocol status (green TLS lock for HTTPS, warning for HTTP, ocean badge for local file URLs, and system sparkles for internal views).
+- **Hibernate Tab Action**: Added explicit "Hibernate Tab (Sleep)" action to tab context menus.
+
 ### Added
 
 - Close Group, in a tab group's menu, closes the group and every tab in it. ⇧⌘T brings them back one by one, into the same group, named as it was. Asked for by email

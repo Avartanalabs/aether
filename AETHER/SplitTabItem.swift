@@ -49,12 +49,12 @@ struct SplitTabItem: View {
             }
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .strokeBorder(Palette.hairline, lineWidth: 1)
                 .padding(.vertical, stacked ? 0 : 6)
                 .allowsHitTesting(false)
         }
-        .contentShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Split tabs")
         .animation(Motion.quick, value: hovered)
@@ -164,18 +164,35 @@ private struct SplitTabHalf: View {
     @ViewBuilder
     private var ground: some View {
         if focused {
-            ZStack(alignment: .leading) {
-                Rectangle().fill(Palette.wash)
-                if prefs.showsReading, !narrow {
-                    GeometryReader { geo in
-                        ReadingFill(meter: tab.meter, width: geo.size.width)
+            ZStack(alignment: .bottom) {
+                ZStack(alignment: .leading) {
+                    Rectangle().fill(Palette.wash)
+                    if prefs.showsReading, !narrow {
+                        GeometryReader { geo in
+                            ReadingFill(meter: tab.meter, width: geo.size.width)
+                        }
                     }
                 }
+                Capsule()
+                    .fill(
+                        LinearGradient(
+                            colors: [Palette.ocean, Palette.purple],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(height: 2)
+                    .padding(.horizontal, 6)
             }
-            .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .strokeBorder(Palette.ocean.opacity(0.32), lineWidth: 1)
+            )
+            .shadow(color: Palette.ocean.opacity(0.22), radius: 6, y: 1)
             .matchedGeometryEffect(id: "live", in: pill)
         } else if hovering {
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(Palette.hover)
         }
     }

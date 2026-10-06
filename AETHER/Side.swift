@@ -739,7 +739,7 @@ private struct SideRow: View {
         .animation(Motion.quick, value: speaker)
         .background { ground }
         .modifier(Shake(travel: shake))
-        .contentShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .modifier(OneClick(double: false) {
             guard interactive else { return }
             if live { browser.beginTabEdit(tab) } else { browser.select(tab) }
@@ -765,18 +765,36 @@ private struct SideRow: View {
     @ViewBuilder
     private var ground: some View {
         if live {
-            ZStack(alignment: .leading) {
-                Rectangle().fill(Palette.wash)
-                if prefs.showsReading {
-                    GeometryReader { geo in
-                        ReadingFill(meter: tab.meter, width: geo.size.width)
+            // Modern ergonomic pill tab: 8px corner radius, capsule geometry, and radiant oceanic active indicator
+            ZStack(alignment: .bottom) {
+                ZStack(alignment: .leading) {
+                    Rectangle().fill(Palette.wash)
+                    if prefs.showsReading {
+                        GeometryReader { geo in
+                            ReadingFill(meter: tab.meter, width: geo.size.width)
+                        }
                     }
                 }
+                Capsule()
+                    .fill(
+                        LinearGradient(
+                            colors: [Palette.ocean, Palette.purple],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(height: 2)
+                    .padding(.horizontal, 6)
             }
-            .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .strokeBorder(Palette.ocean.opacity(0.32), lineWidth: 1)
+            )
+            .shadow(color: Palette.ocean.opacity(0.22), radius: 6, y: 1)
             .matchedGeometryEffect(id: "live", in: pill)
         } else if hovering {
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(Palette.hover)
         }
     }
@@ -811,10 +829,10 @@ struct Quiet: View {
             .frame(height: height)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
-                RoundedRectangle(cornerRadius: 9, style: .continuous)
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill(hovering ? Palette.hover : .clear)
             )
-            .contentShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }

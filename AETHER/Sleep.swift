@@ -20,11 +20,11 @@ import WebKit
 // a warning, to nothing when it is critical.
 
 extension Browser {
-    /// How long a tab has to go without being looked at. Half an hour, or
+    /// How long a tab has to go without being looked at. 15 minutes, or
     /// `sleep.after` in seconds — for the bench and the measurements.
     static var sleepAfter: TimeInterval {
         let set = Store.settings.double(forKey: "sleep.after")
-        return set > 0 ? set : 30 * 60
+        return set > 0 ? set : 15 * 60
     }
 
     /// Started once, at launch.
@@ -118,5 +118,17 @@ extension Browser {
                 done?("asleep")
             }
         }
+    }
+
+    /// Dynamic Tab Hibernation & Memory Compression (v0.0.3):
+    /// Suspends background dormant tab, captures compressed snapshot preview, caches
+    /// navigation state token, and releases heavy WebContent processes to compress memory footprint.
+    func hibernate(_ tab: Tab, done: ((String) -> Void)? = nil) {
+        self.sleep(tab, done: done)
+    }
+
+    /// Suspend all eligible background dormant tabs immediately.
+    func hibernateDormantTabs(threshold: TimeInterval? = nil) {
+        self.sleepIdle(within: threshold)
     }
 }

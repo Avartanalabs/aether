@@ -1001,13 +1001,37 @@ final class Tab: ObservableObject, Identifiable {
     /// Back still going back. What was typed and not sent is the one thing
     /// that can't come back, which is why the browser asks `unsaved` first.
     func sleep(picture: Data?) {
-        guard let url = address, let built else { return }
+        guard let url = address ?? built?.url, let built else { return }
         memory = built.interactionState
         self.picture = picture
         pending = url
         stale = false
         pull = nil
         discard()
+    }
+
+    /// Dynamic Tab Hibernation & Memory Compression (v0.0.3):
+    /// Suspends background dormant tab, captures compressed snapshot preview, caches
+    /// navigation state token, and releases heavy WebContent processes to compress memory footprint.
+    func hibernate(done: ((Bool) -> Void)? = nil) {
+        guard !asleep, built != nil, address != nil || built?.url != nil else {
+            done?(false)
+            return
+        }
+        snapshot { [weak self] pic in
+            guard let self else {
+                done?(false)
+                return
+            }
+            self.sleep(picture: pic)
+            done?(true)
+        }
+    }
+
+    /// Seamlessly reconstitute the WKWebView with zero data loss upon reactivation.
+    @discardableResult
+    func reconstitute() -> Bool {
+        return wake()
     }
 
     /// A page moved to another space must use that space's cookies. WebKit

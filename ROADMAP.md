@@ -55,29 +55,19 @@ v0.0.1 (Clean Foundation) ──► v0.0.2 (Pill Tabs & Hibernation) ──► v
 
 ---
 
-### [v0.0.2] — Pill Tabs & Dynamic Hibernation Engine
-*Target: Q4 2026*
+### [v0.0.3] — Dynamic Tab Hibernation, Ergonomic Pill Tabs & Floating Glass Omnibox (Completed October 2026)
+*Released: October 6, 2026*
 
 - **Core Capabilities**:
-  - **Dynamic Tab Hibernation**: Automatically shed memory from tabs dormant >15 minutes by discarding background `WKWebView` WebContent processes while retaining snapshot tokens and scroll offsets.
-  - **Process Pool Reuse**: Shared WebKit process pools for background tabs, targeting <80 MB cold footprint with 50+ tabs.
+  - [x] **Dynamic Tab Hibernation & Memory Compression**: Shed memory from tabs dormant >15 minutes (or under system memory pressure) by discarding background `WKWebView` WebContent processes while retaining snapshot tokens and navigation state tokens. Zero data loss reconstitution on reactivation.
+  - [x] **Snapshot Cover Cache**: Smooth visual reconstitution eliminating white flashes when restoring asleep tabs.
+  - [x] **Resumable Download Manager**: Dedicated popover panel (`⇧⌘J`) with pause, resume, file verification, and quarantine attribute handling.
 - **UI Transformation**:
-  - **Rounded Capsule Tabs**: Replace flat rectangular tabs with floating ergonomic pill tabs (8px corner radius, 1px subtle border sheen).
-  - **Ocean Accent Indicator**: 2px radiant ocean-purple active indicator bar below or beside the selected tab.
-  - **Micro-Interaction Polish**: Smooth crossfade on tab close buttons and tab hover states.
-
----
-
-### [v0.0.3] — Floating Glass Omnibox & Apple Silicon Metal Optimization
-*Target: Q4 2026*
-
-- **Core Capabilities**:
-  - **Apple Silicon Battery Optimization**: Dynamic ProMotion 120Hz vs 60Hz throttling based on window focus and scroll velocity.
-  - **Resumable Download Manager**: Dedicated popover panel (`⇧⌘J`) with pause, resume, file verification, and quarantine attribute handling.
-- **UI Transformation**:
-  - **Floating Glass Omnibox**: Address bar styled as a floating pill with subtle acrylic blur (`.ultraThinMaterial`) and soft oceanic focus ring.
-  - **Security & Protocol Badges**: Color-coded security pill inside the omnibox (green TLS padlock, blue local file badge).
-  - **Refined Suggestions Overlay**: Dropdown completion list rendered with glassmorphic cards and keyboard shortcut chips.
+  - [x] **Ergonomic Rounded Pill Tabs**: Replaced flat rectangular tabs with floating ergonomic pill tabs (8px corner radius, continuous capsule geometry, 1px subtle border sheen).
+  - [x] **Radiant Ocean Accent Indicator**: 2px gradient active indicator bar (`Palette.ocean` to `Palette.purple`) and ambient glow behind active tabs.
+  - [x] **Floating Glass Omnibox**: Address bar styled as a floating glass pill with native acrylic blur (`.ultraThinMaterial` + `Palette.ground.opacity(0.72)`), oceanic focus ring, and dual elevation drop shadows.
+  - [x] **Security & Protocol Badges**: Integrated color-coded security indicator pill (green TLS padlock, insecure HTTP indicator, local file badge, and system sparkles).
+  - [x] **Refined Glass Suggestions Overlay**: Dropdown completion list rendered with glassmorphic cards and keyboard shortcut chips.
 
 ---
 

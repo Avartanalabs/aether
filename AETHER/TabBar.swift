@@ -135,9 +135,9 @@ struct TabBar: View {
                             .frame(width: 15, height: 15)
                             .padding(.horizontal, 7)
                             .padding(.vertical, 6)
-                            .contentShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+                            .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                             .background(
-                                RoundedRectangle(cornerRadius: 9, style: .continuous)
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
                                     .fill(plussed ? Palette.hover : .clear)
                             )
                     }
@@ -539,7 +539,7 @@ private struct TabPill: View {
         }
         .background { ground }
         .modifier(Shake(travel: shake))
-        .contentShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         // Never both at once.
         //
         // A view carrying a single tap *and* a double tap has to wait out the
@@ -686,31 +686,42 @@ private struct TabPill: View {
     @ViewBuilder
     private var ground: some View {
         if live {
-            // The grey fills from the left as you read down the page. It is
-            // the one thing in the window that says how far in you are, and
-            // it says it without adding anything to the window.
-            ZStack(alignment: .leading) {
-                // A pinned square among the faint grey of the others: the
-                // darker grey the column's live pin wears too.
-                Rectangle().fill(pinned ? Palette.pinLive : Palette.wash)
-                // Not on a pinned square, nor a tab down to its mark. Thirty
-                // points of grey filling from the left behind a single letter
-                // says nothing about anything — it needs the width of a title
-                // to read as progress at all.
-                if !pinned && !compact && prefs.showsReading {
-                    ReadingFill(meter: tab.meter, width: span)
+            // Modern ergonomic pill tab: 8px corner radius, capsule geometry, and radiant oceanic active indicator
+            ZStack(alignment: .bottom) {
+                ZStack(alignment: .leading) {
+                    Rectangle().fill(pinned ? Palette.pinLive : Palette.wash)
+                    if !pinned && !compact && prefs.showsReading {
+                        ReadingFill(meter: tab.meter, width: span)
+                    }
                 }
+                // Radiant oceanic active indicator bar
+                Capsule()
+                    .fill(
+                        LinearGradient(
+                            colors: [Palette.ocean, Palette.purple],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(height: 2)
+                    .padding(.horizontal, pinned ? 4 : 8)
             }
-            .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .strokeBorder(Palette.ocean.opacity(0.32), lineWidth: 1)
+            )
+            .shadow(color: Palette.ocean.opacity(0.22), radius: 6, y: 1)
             .matchedGeometryEffect(id: "live", in: pill)
         } else if hovering {
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(Palette.hover)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(Palette.hairline.opacity(0.5), lineWidth: 0.5)
+                )
         } else if pinned {
-            // A letter with nothing behind it reads as debris. A pinned tab
-            // keeps a faint ground of its own so the block of them reads as
-            // one thing.
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(Palette.wash.opacity(0.55))
         }
     }
@@ -1076,8 +1087,8 @@ struct TabMenu: View {
         // Its page let go of now, as it would be after half an hour unseen:
         // the row keeps its title and picture, and it loads again when gone
         // to. Not the tab on screen, nor one that has to stay awake (#310).
-        Button("Put to Sleep") {
-            browser.sleep(tab) { outcome in
+        Button("Hibernate Tab (Sleep)") {
+            browser.hibernate(tab) { outcome in
                 if outcome != "asleep" { browser.announce("Stays awake: \(outcome)") }
             }
         }
