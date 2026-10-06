@@ -33,48 +33,48 @@ enum WhatsNew {
     /// version's, and the older ones still off.
     static let toggles: [Toggle] = [
         Toggle(title: "AI on pages", detail: "Summarize a page or ask about it. Choose where it runs in Settings › AI.",
-               since: "1.0.5", get: { $0.ai }, set: { $0.ai = $1 }),
+               since: "0.0.1", get: { $0.ai }, set: { $0.ai = $1 }),
         Toggle(title: "Split View", detail: "Two tabs side by side: drag a tab to the edge of a page, or press ⌥⌘N.",
-               since: "1.0.5", get: { $0.splitView }, set: { $0.splitView = $1 }),
+               since: "0.0.1", get: { $0.splitView }, set: { $0.splitView = $1 }),
         Toggle(title: "Search a site from the address field", detail: "The start of a site's name, then Tab: red, Tab, and your words search Reddit.",
-               since: "1.0.5", get: { $0.searchesSites }, set: { $0.searchesSites = $1 }),
+               since: "0.0.1", get: { $0.searchesSites }, set: { $0.searchesSites = $1 }),
         Toggle(title: "Start with a fresh window", detail: "Your pinned tabs, and none of last time's others.",
-               since: "1.0.5", get: { $0.startsFresh }, set: { $0.startsFresh = $1 }),
+               since: "0.0.1", get: { $0.startsFresh }, set: { $0.startsFresh = $1 }),
 
         Toggle(title: "Tab groups", detail: "Named sections of tabs. Right-click a tab to start one.",
-               since: "1.0.4", get: { $0.usesTabGroups }, set: { $0.usesTabGroups = $1 }),
+               since: "0.0.1", get: { $0.usesTabGroups }, set: { $0.usesTabGroups = $1 }),
         Toggle(title: "Sidebar on the right", detail: "The tabs down the right edge of the window.",
-               since: "1.0.4", get: { $0.sidebar && $0.sidePosition == .right },
+               since: "0.0.1", get: { $0.sidebar && $0.sidePosition == .right },
                set: { prefs, on in
                    if on { prefs.sidebar = true }
                    prefs.sidePosition = on ? .right : .left
                }),
         Toggle(title: "Videos wait for a click", detail: "Videos don't start by themselves, even without sound.",
-               since: "1.0.4", get: { $0.waitsForPlay }, set: { $0.waitsForPlay = $1 }),
+               since: "0.0.1", get: { $0.waitsForPlay }, set: { $0.waitsForPlay = $1 }),
         Toggle(title: "Always show the downloads button", detail: "Your downloads one click away, beside the other buttons.",
-               since: "1.0.4", get: { $0.alwaysShowsDownloads }, set: { $0.alwaysShowsDownloads = $1 }),
+               since: "0.0.1", get: { $0.alwaysShowsDownloads }, set: { $0.alwaysShowsDownloads = $1 }),
 
         Toggle(title: "Spaces", detail: "Separate sets of tabs, each with its own sign-ins. ⌃1–⌃9 to switch.",
-               since: "1.0.1", get: { $0.usesSpaces }, set: { $0.usesSpaces = $1 }),
+               since: "0.0.1", get: { $0.usesSpaces }, set: { $0.usesSpaces = $1 }),
         Toggle(title: "A sidebar that hides", detail: "The page takes the whole window; the tabs come out at the edge.",
-               since: "1.0.1", get: { $0.sidebar && $0.sideHides },
+               since: "0.0.1", get: { $0.sidebar && $0.sideHides },
                set: { prefs, on in
                    if on { prefs.sidebar = true }
                    prefs.sideHides = on
                }),
         Toggle(title: "Bookmarks bar", detail: "Your bookmarks in a row above the page.",
-               since: "1.0.2", get: { $0.bookmarksBar }, set: { $0.bookmarksBar = $1 }),
+               since: "0.0.1", get: { $0.bookmarksBar }, set: { $0.bookmarksBar = $1 }),
         Toggle(title: "Float the video when you switch apps", detail: "A playing video follows you out into a small window.",
-               since: "1.0.2", get: { $0.floatsAway }, set: { $0.floatsAway = $1 }),
+               since: "0.0.1", get: { $0.floatsAway }, set: { $0.floatsAway = $1 }),
         Toggle(title: "Pages at 120 Hz", detail: "Smoother scrolling and animations on screens that can. Uses more battery.",
-               since: "1.0.2", get: { $0.fastPages }, set: { $0.fastPages = $1 }),
+               since: "0.0.1", get: { $0.fastPages }, set: { $0.fastPages = $1 }),
         Toggle(title: "Scroll with the middle button", detail: "Click the wheel, then move the mouse to scroll, as on Windows.",
-               since: "1.0.3", get: { $0.autoScroll }, set: { $0.autoScroll = $1 }),
+               since: "0.0.1", get: { $0.autoScroll }, set: { $0.autoScroll = $1 }),
     ]
 
-    static let releases: [Release] = [
-        Release(version: "1.0.4"),
-    ]
+    /// AETHER releases so far added features that are on by default, so no
+    /// version has a card yet. The next switch that starts off gets one.
+    static let releases: [Release] = []
 
     /// This version's card, when it has one.
     static var current: Release? { releases.first { $0.version == Updater.version } }
@@ -123,99 +123,46 @@ enum WhatsNew {
     /// Newest first.
     static let notes: [Notes] = [
         Notes(
-            version: "1.0.4", date: "27 September 2026",
-            headline: "Several windows, and a lot to discover. Most of what's new is off until you turn it on, and the card after the update offers it.",
+            version: "0.0.5", date: "6 October 2026",
+            headline: "Four panes, and a scroll that follows.",
             new: [
-                "Several windows. ⌘N opens one with its own tabs; drag a tab out of the row, or use Move to Window in its menu, and it moves with its page as it is. Pinned tabs are the same in every window.",
-                "Tab groups, and a sidebar on the right.",
-                "⌃Tab shows your recent tabs as pictures, the last one first: a quick ⌃Tab goes back to the tab you were on.",
-                "Your own keyboard shortcuts, in Settings › Shortcuts.",
-                "Downloads show while they happen: a small circle fills beside the other buttons, and the Finder and the Dock show the progress too. The button can stay there for good.",
-                "Bring things over from Firefox, Zen, Helium, Comet, Opera, Chrome's other channels and Arc, its spaces and pinned tabs included, or from an exported file.",
-                "Site shortcuts: a word of your own before a search sends it to that site, like yt cats to YouTube.",
-                "Bookmarks in the order you choose, folders of your own, and a card to name a bookmark as you add it.",
-                "Videos can wait for a click, and every site can start at a zoom of your choice.",
-                "A double-click on a pinned tab takes it back to the page it was pinned at.",
-                "Hold a back or forward swipe to pick a page from history.",
-            ],
-            better: [
-                "Scrolling asks far less of the window, and a tab still loading no longer keeps the Mac busy.",
-                "Where links go, peeking at a link with a shift-click, and flicking the floating video to a corner are now on.",
-                "Tab managers and other extensions see every tab, in every window.",
-                "Window › Move & Resize and the Mac's tiling work with Search's window.",
-                "⌘K always opens the list of your tabs, whatever the page.",
-            ],
-            fixed: [
-                "⌘← and ⌘→ go back and forward again.",
-                "Links from Notion and other apps bring Search to the front.",
-                "Addresses a dev server prints, like 0.0.0.0:3000, open.",
-                "The tabs you had at quit are the ones that come back.",
-                "The × closes a tab in the tab bar folded away with ⌘S.",
-                "1Password, Bitwarden, NordPass, Passbolt, iCloud Passwords and the Claude extension each get their fixes.",
-                "And many smaller fixes.",
-            ]
-        ),
-        Notes(
-            version: "1.0.3", date: "24 September 2026",
-            headline: "Security, and the mouse wheel.",
-            new: [
-                "Copying a saved password asks for Touch ID.",
-            ],
-            better: [
-                "A mouse wheel scrolls smoothly again on x.com and pages like it.",
-                "History opens at once.",
-                "Music keeps playing when you switch spaces.",
-                "Pop-ups need a click.",
-            ],
-            fixed: [
-                "The holes found in this week's reviews: an extension could read files outside its own folder, and a page or an ad could open another app without asking.",
-                "Bitwarden signs in to a self-hosted server, and extension popups hear what changes while they're open.",
-                "A link from Mail brings Search to the front, and a full-screen video no longer goes black.",
-                "Your extensions may each ask once more for their permissions at their next update.",
-            ]
-        ),
-        Notes(
-            version: "1.0.2", date: "24 September 2026",
-            headline: "Passkeys, password managers and Google.",
-            new: [
-                "A site's passkey button brings up the Mac's own passkey sheet: Touch ID, your iPhone, a security key.",
-                "Search can be the Mac's default browser.",
-                "Each off until you turn it on in Settings: a bookmarks bar, a peek at a link with a shift-click, the video that follows you to another app, pages at 120 Hz, and where a link goes.",
-                "Mute a tab, share a page, copy a link as Markdown, the mouse's back and forward buttons, and spaces in the bar across the top.",
-            ],
-            better: [
-                "Faster to open, and new tabs in about 10 ms.",
-                "Pages see nothing of Search that Safari doesn't show them, and a saved password is offered only on its own site.",
-            ],
-            fixed: [
-                "1Password, Bitwarden and Proton Pass.",
-                "If passkeys still fail after the update, restart your Mac once.",
-            ]
-        ),
-        Notes(
-            version: "1.0.1", date: "23 September 2026",
-            headline: "The first update, made of a day of your replies and pull requests.",
-            new: [
-                "Each off until you turn it on in Settings: Spaces, a sidebar that hides until the pointer reaches the edge, and the search engine of your choice.",
-                "⌘S folds the sidebar away, a middle-click closes a tab, a tab can be renamed, and the Web Inspector is in the View menu.",
+                "Split View goes past a pair: two, three or four pages tile the window (⌥⌘2, ⌥⌘3, ⌥⌘4), each pane with its own tab item, title and favicon.",
+                "Drag a tab to a corner: the dock zones show where it will land, and it takes that quadrant.",
+                "⌥⌘S locks adjacent panes to one scroll position, with an indicator while it is on.",
             ],
             better: [],
-            fixed: [
-                "Search opens again on macOS 14.",
-                "Signing in to Google no longer reloads the page over and over with iCloud Passwords installed.",
-                "⌘1–⌘9 on every keyboard layout, Tab between a form's fields, dragging tabs, a double-click along the top to fill the screen, and the Mac's beep while typing.",
-            ]
+            fixed: []
         ),
         Notes(
-            version: "1.0", date: "23 September 2026",
-            headline: "The first version. A browser for the Mac with nothing in the way.",
+            version: "0.0.4", date: "6 October 2026",
+            headline: "Dividers you can hold, and a halo round the page you are on.",
             new: [
-                "Tabs in a row or down the side, pinned tabs that keep their place, and one field for addresses and searches.",
-                "Ads blocked before they load; passwords and passkeys in your keychain.",
-                "Anything on a page can be hidden; articles open in a reading mode and videos float.",
-                "Chrome extensions from the Chrome Web Store, on macOS 15.4 or later.",
-                "Tabs you haven't looked at for half an hour sleep and give their memory back.",
-                "It runs on the engine already in macOS and weighs 2.9 MB.",
+                "The split divider is an interactive gutter with a floating grab handle, hover and drag states, and a double-click that evens the halves or walks the ratios.",
+                "The focused pane wears an ocean-purple halo, so the keyboard and scroll target is never in doubt.",
+            ],
+            better: [],
+            fixed: []
+        ),
+        Notes(
+            version: "0.0.3", date: "6 October 2026",
+            headline: "Tabs that sleep, and a quieter interface.",
+            new: [
+                "Tabs give their memory back after 15 minutes, or sooner under memory pressure, and come back from a snapshot with no white flash.",
+                "Pill tabs with a radiant ocean-purple indicator, in the row and down the side.",
+                "A floating glass omnibox with acrylic blur, a focus ring, and a badge for TLS, HTTP and local files.",
+            ],
+            better: [],
+            fixed: []
+        ),
+        Notes(
+            version: "0.0.1", date: "6 October 2026",
+            headline: "A browser for the Mac with nothing in the way.",
+            new: [
+                "Native Swift, AppKit and WebKit: one 7 MB app, about 94 MB of memory at cold start, no telemetry and no account.",
+                "Split View, pinned tabs, spaces, tab groups, a sidebar, reader mode, picture-in-picture and element hiding.",
+                "Ad and tracker rules compiled into WebKit; passwords and passkeys in the macOS Keychain.",
+                "Chrome extensions on macOS 15.4 and later.",
+                "A local automation socket: scripts and agents can drive tabs over JSON-RPC.",
             ],
             better: [],
             fixed: []
@@ -238,7 +185,7 @@ struct WhatsNewCard: View {
     private var fresh: [WhatsNew.Toggle] { WhatsNew.toggles.filter { $0.since == release.version } }
 
     var body: some View {
-        Plate("New in Search \(release.version)", width: 460, close: close) {
+        Plate("New in Aether \(release.version)", width: 460, close: close) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     rows(fresh)
@@ -316,7 +263,7 @@ struct ReleaseNotesPanel: View {
     private func version(_ note: WhatsNew.Notes) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text("Search \(note.version)")
+                Text("Aether \(note.version)")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Palette.ink)
                 if !note.date.isEmpty {
