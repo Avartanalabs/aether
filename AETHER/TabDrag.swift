@@ -51,23 +51,61 @@ final class TabDrag: ObservableObject {
 
     enum Side: Equatable { case left, right }
 
+    enum DockZone: String, Equatable {
+        case left, right, top, bottom
+        case topLeft, topRight, bottomLeft, bottomRight
+
+        var isOnLeft: Bool {
+            switch self {
+            case .left, .topLeft, .bottomLeft: return true
+            default: return false
+            }
+        }
+
+        var isCorner: Bool {
+            switch self {
+            case .topLeft, .topRight, .bottomLeft, .bottomRight: return true
+            default: return false
+            }
+        }
+
+        var quadrantIndex: Int {
+            switch self {
+            case .topLeft: return 0
+            case .topRight: return 1
+            case .bottomLeft: return 2
+            case .bottomRight: return 3
+            default: return 0
+            }
+        }
+    }
+
     struct Preview: Equatable {
         let browserID: ObjectIdentifier
         let targetID: Tab.ID
         let side: Side
+        var zone: DockZone = .right
         /// The tab being carried, to name it in the half it would take.
         var sourceID: Tab.ID? = nil
     }
 
     enum Drop {
-        case stage(Tab, onLeft: Bool)
+        case stage(Tab, zone: DockZone)
         case strip(Tab?)
         case outside
         case cancelled
+
+        var onLeft: Bool {
+            if case .stage(_, let zone) = self {
+                return zone.isOnLeft
+            }
+            return false
+        }
     }
 
     @Published private(set) var preview: Preview?
     @Published private(set) var cancelledID: Tab.ID?
+    @Published private(set) var isDragging: Bool = false
 
     private final class WeakMarker {
         weak var view: SplitDropZone.Marker?
@@ -132,12 +170,12 @@ final class TabDrag: ObservableObject {
         guard let sourceTab else { return false }
         let matched = match(browser: browser, source: sourceTab, at: point)
         target = matched
-        guard case .stage(let page, let onLeft) = matched else {
+        guard case .stage(let page, let zone) = matched else {
             recheck?.cancel()
             if preview != nil { preview = nil }
             return false
         }
-        let wanted = Preview(browserID: ObjectIdentifier(browser), targetID: page.id, side: onLeft ? .left : .right, sourceID: sourceTab.id)
+        let wanted = Preview(browserID: ObjectIdentifier(browser), targetID: page.id, side: zone.isOnLeft ? .left : .right, zone: zone, sourceID: sourceTab.id)
         if preview == wanted { return true }
         guard settled(at: point) else {
             // Look again once it may have stopped: a hand at rest sends
@@ -174,8 +212,8 @@ final class TabDrag: ObservableObject {
         } else if sourceBrowser === browser && gestureTab === tab {
             result = match(browser: browser, source: source, at: point)
             // A split only where one was shown.
-            if case .stage(let page, let onLeft) = result,
-               preview != Preview(browserID: ObjectIdentifier(browser), targetID: page.id, side: onLeft ? .left : .right, sourceID: sourceTab?.id) {
+            if case .stage(let page, let zone) = result,
+               preview != Preview(browserID: ObjectIdentifier(browser), targetID: page.id, side: zone.isOnLeft ? .left : .right, zone: zone, sourceID: sourceTab?.id) {
                 result = .outside
             }
         } else {
@@ -199,6 +237,7 @@ final class TabDrag: ObservableObject {
 
     private func begin(browser: Browser, tab: Tab, at origin: NSPoint) {
         clear()
+        isDragging = true
         cancelledID = nil
         sourceBrowser = browser
         gestureTab = tab
@@ -213,6 +252,7 @@ final class TabDrag: ObservableObject {
     private func cancel() {
         guard let gestureTab else { return }
         cancelledID = gestureTab.id
+        isDragging = false
         preview = nil
         target = .cancelled
         removeMonitor()
@@ -222,6 +262,7 @@ final class TabDrag: ObservableObject {
         recheck?.cancel()
         recheck = nil
         trail = []
+        isDragging = false
         preview = nil
         sourceBrowser = nil
         gestureTab = nil
@@ -246,13 +287,32 @@ final class TabDrag: ObservableObject {
             view.kind == .stage && view.tab.map { browser.canSplit(source, with: $0) } == true
         }), let page = stage.tab {
             let frame = window.convertToScreen(stage.convert(stage.bounds, to: nil))
+            let cornerBand = max(140, min(frame.width, frame.height) * 0.28)
             let band = max(TabDrag.band, frame.width * TabDrag.bandShare)
-            // The side shown keeps a little more room before it lets go.
-            let shown = preview?.targetID == page.id ? preview?.side : nil
-            let left = band + (shown == .left ? TabDrag.slack : 0)
-            let right = band + (shown == .right ? TabDrag.slack : 0)
-            if point.x <= frame.minX + left { return .stage(page, onLeft: true) }
-            if point.x >= frame.maxX - right { return .stage(page, onLeft: false) }
+            let vBand = max(90, frame.height * 0.22)
+
+            let nearLeft = point.x <= frame.minX + cornerBand
+            let nearRight = point.x >= frame.maxX - cornerBand
+            let nearTop = point.y >= frame.maxY - cornerBand
+            let nearBottom = point.y <= frame.minY + cornerBand
+
+            // Corner quadrant dock zones (2x2 quad grid)
+            if nearLeft && nearTop { return .stage(page, zone: .topLeft) }
+            if nearRight && nearTop { return .stage(page, zone: .topRight) }
+            if nearLeft && nearBottom { return .stage(page, zone: .bottomLeft) }
+            if nearRight && nearBottom { return .stage(page, zone: .bottomRight) }
+
+            // Edge dock zones
+            let shown = preview?.targetID == page.id ? preview?.zone : nil
+            let leftSlack = (shown == .left ? TabDrag.slack : 0)
+            let rightSlack = (shown == .right ? TabDrag.slack : 0)
+            let topSlack = (shown == .top ? TabDrag.slack : 0)
+            let bottomSlack = (shown == .bottom ? TabDrag.slack : 0)
+
+            if point.x <= frame.minX + band + leftSlack { return .stage(page, zone: .left) }
+            if point.x >= frame.maxX - band - rightSlack { return .stage(page, zone: .right) }
+            if point.y >= frame.maxY - vBand - topSlack { return .stage(page, zone: .top) }
+            if point.y <= frame.minY + vBand + bottomSlack { return .stage(page, zone: .bottom) }
         }
         guard browser.split(for: source) != nil else { return .outside }
         let pair = browser.split(for: source)

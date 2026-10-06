@@ -167,6 +167,20 @@ struct AetherApp: App {
                     Button("Split Current Page") { browser.startSplit() }
                         .shortcut("tabs.split")
                         .disabled(browser.active == nil || browser.active?.bench == true)
+                    Button("Dual Pane (2 Panes)") { browser.setSplitCount(2) }
+                        .shortcut("tabs.splitDual")
+                        .disabled(browser.active == nil || browser.active?.bench == true)
+                    Button("Triple Pane (3 Panes)") { browser.setSplitCount(3) }
+                        .shortcut("tabs.splitTriple")
+                        .disabled(browser.active == nil || browser.active?.bench == true)
+                    Button("Spatial Quad-Grid (4 Panes)") { browser.setSplitCount(4) }
+                        .shortcut("tabs.splitQuad")
+                        .disabled(browser.active == nil || browser.active?.bench == true)
+                    Button(browser.syncScrollEnabled ? "Disable Synchronized Scrolling" : "Enable Synchronized Scrolling") {
+                        browser.toggleSyncScroll()
+                    }
+                    .shortcut("tabs.toggleSyncScroll")
+                    .disabled(browser.activeSplit == nil)
                     Button("Focus Left Page") { browser.focusPane(onLeft: true) }
                         .shortcut("tabs.focusLeftPane")
                         .disabled(browser.activeSplit == nil)

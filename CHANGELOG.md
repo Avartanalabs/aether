@@ -11,6 +11,15 @@ in [ROADMAP.md](ROADMAP.md).
 
 ## Unreleased
 
+## [0.0.5] - 2026-10-06
+
+### Added
+
+- **Spatial Quad-Grid (2x2) & N-Pane Orchestration**: Introduced comprehensive multi-pane spatial viewing configurations supporting Dual (`⌥⌘2`), Triple (`⌥⌘3`), and Quad-Grid 2x2 (`⌥⌘4`). Automatically tiles active viewports across symmetric Cartesian coordinates while dynamically managing tab associations and focus states.
+- **Visual Drag-to-Dock Zones**: Enhanced drag mechanics with ethereal glowing quadrant dock pads and fluid translucent placement previews. Dropping a tab into quadrant corners (`topLeft`, `topRight`, `bottomLeft`, `bottomRight`) or edge targets seamlessly docks into spatial matrix layouts.
+- **Synchronized Scrolling Mode (`⌥⌘S`)**: Integrated low-latency DOM scroll synchronization across paired and tiled split panes for side-by-side document diffing, documentation referencing, and responsive design validation. Includes a floating translucent HUD indicator badge.
+- **Dynamic Multi-Pane Tab Bar**: Generalized tab items to represent arbitrary multi-pane viewports with proportional hairline dividers, title truncation, and individual favicon rendering in single cohesive tab rows.
+
 ## [0.0.4] - 2026-10-06
 
 ### Added

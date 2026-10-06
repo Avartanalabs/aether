@@ -189,6 +189,22 @@ struct Command: Identifiable {
             guard browser.prefs.splitView else { return }
             browser.startSplit()
         },
+        Command("tabs.splitDual", "Dual Pane (2 Panes)", .tabs, KeyCombo("2", option: true)) { browser in
+            guard browser.prefs.splitView else { return }
+            browser.setSplitCount(2)
+        },
+        Command("tabs.splitTriple", "Triple Pane (3 Panes)", .tabs, KeyCombo("3", option: true)) { browser in
+            guard browser.prefs.splitView else { return }
+            browser.setSplitCount(3)
+        },
+        Command("tabs.splitQuad", "Spatial Quad-Grid (4 Panes)", .tabs, KeyCombo("4", option: true)) { browser in
+            guard browser.prefs.splitView else { return }
+            browser.setSplitCount(4)
+        },
+        Command("tabs.toggleSyncScroll", "Toggle Synchronized Scrolling", .tabs, KeyCombo("s", option: true)) { browser in
+            guard browser.prefs.splitView else { return }
+            browser.toggleSyncScroll()
+        },
         Command("tabs.focusLeftPane", "Focus Left Page", .tabs, KeyCombo("left", control: true)) { browser in
             guard browser.prefs.splitView else { return }
             browser.focusPane(onLeft: true)
@@ -446,7 +462,9 @@ extension View {
 extension Command {
     /// Split View's commands: with it off, not listed, and their keys go on
     /// to the page.
-    static let split: Set<String> = ["tabs.split", "tabs.focusLeftPane", "tabs.focusRightPane", "tabs.focusOtherPane",
+    static let split: Set<String> = ["tabs.split", "tabs.splitDual", "tabs.splitTriple", "tabs.splitQuad",
+                                     "tabs.toggleSyncScroll",
+                                     "tabs.focusLeftPane", "tabs.focusRightPane", "tabs.focusOtherPane",
                                      "tabs.focusSpatialLeft", "tabs.focusSpatialRight", "tabs.focusSpatialUp", "tabs.focusSpatialDown",
                                      "tabs.swapSplit", "tabs.separateSplit"]
     /// The AI add-on's: with it off, not listed.

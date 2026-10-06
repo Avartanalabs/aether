@@ -425,6 +425,8 @@ final class Tab: ObservableObject, Identifiable {
     var onLink: ((Tab, String?) -> Void)?
     /// The page took the keys (see PageView.onKeys).
     var onKeys: ((Tab) -> Void)?
+    /// The page was scrolled (for synchronized scrolling across split panes).
+    var onScrollWheel: ((Tab, NSEvent) -> Void)?
 
     /// True while something on the page is making noise, so the row can say
     /// which tab it is coming from.
@@ -602,6 +604,7 @@ final class Tab: ObservableObject, Identifiable {
         web.onPull = { [weak self] pull in self?.pull = pull }
         web.onTouch = { [weak self] in self?.uncover() }
         web.onKeys = { [weak self] in if let self { self.onKeys?(self) } }
+        web.onScrollWheel = { [weak self] event in if let self { self.onScrollWheel?(self, event) } }
         web.searchName = { [weak self] in self?.searchName?() }
         web.onSearch = { [weak self] text in
             guard let self else { return }
@@ -1551,6 +1554,7 @@ final class PageView: WKWebView {
     /// window.focus() never make this view first responder. If that is ever
     /// added, it must not do so for the page that isn't focused.
     var onKeys: (() -> Void)?
+    var onScrollWheel: ((NSEvent) -> Void)?
 
     override func becomeFirstResponder() -> Bool {
         let took = super.becomeFirstResponder()
@@ -1793,6 +1797,7 @@ final class PageView: WKWebView {
         // gesture's end still reaches the page, which saw it begin.
         if stops == nil || event.phase == .ended || event.phase == .cancelled {
             super.scrollWheel(with: event)
+            onScrollWheel?(event)
         }
         // Only a live trackpad gesture — not its glide afterwards, and not a
         // mouse wheel, which has no beginning or end to speak of.

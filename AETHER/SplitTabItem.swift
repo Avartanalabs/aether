@@ -11,8 +11,7 @@ import SwiftUI
 struct SplitTabItem: View {
     @ObservedObject var browser: Browser
     @ObservedObject var prefs: Preferences
-    @ObservedObject var left: Tab
-    @ObservedObject var right: Tab
+    let tabs: [Tab]
     /// Across the top: the item's width. Nil in the column, which is as wide
     /// as the column.
     let width: CGFloat?
@@ -28,21 +27,46 @@ struct SplitTabItem: View {
     private var stacked: Bool { width == nil }
     private var focused: Tab.ID? { live ? (focusedID ?? browser.activeID) : nil }
 
+    init(browser: Browser, prefs: Preferences, tabs: [Tab], width: CGFloat?, height: CGFloat, live: Bool, focusedID: Tab.ID? = nil, interactive: Bool, pill: Namespace.ID) {
+        self.browser = browser
+        self.prefs = prefs
+        self.tabs = tabs
+        self.width = width
+        self.height = height
+        self.live = live
+        self.focusedID = focusedID
+        self.interactive = interactive
+        self.pill = pill
+    }
+
+    init(browser: Browser, prefs: Preferences, left: Tab, right: Tab, width: CGFloat?, height: CGFloat, live: Bool, focusedID: Tab.ID? = nil, interactive: Bool, pill: Namespace.ID) {
+        self.init(browser: browser, prefs: prefs, tabs: [left, right], width: width, height: height, live: live, focusedID: focusedID, interactive: interactive, pill: pill)
+    }
+
     var body: some View {
         Group {
             if stacked {
                 VStack(spacing: 0) {
-                    half(left)
-                    half(right)
+                    ForEach(Array(tabs.enumerated()), id: \.element.id) { index, tab in
+                        if index > 0 {
+                            Rectangle()
+                                .fill(Palette.hairline)
+                                .frame(height: 1)
+                        }
+                        half(tab)
+                    }
                 }
             } else {
                 HStack(spacing: 0) {
-                    half(left)
-                    Rectangle()
-                        .fill(Palette.hairline)
-                        .frame(width: 1)
-                        .padding(.vertical, 12)
-                    half(right)
+                    ForEach(Array(tabs.enumerated()), id: \.element.id) { index, tab in
+                        if index > 0 {
+                            Rectangle()
+                                .fill(Palette.hairline)
+                                .frame(width: 1)
+                                .padding(.vertical, 12)
+                        }
+                        half(tab)
+                    }
                 }
                 .frame(width: width, height: height)
                 .overlay(alignment: .trailing) { cross }
@@ -68,7 +92,7 @@ struct SplitTabItem: View {
             focused: focused == tab.id,
             stacked: stacked,
             height: height,
-            narrow: width.map { ($0 - 1) / 2 < 64 } ?? false,
+            narrow: width.map { ($0 - CGFloat(max(0, tabs.count - 1))) / CGFloat(max(1, tabs.count)) < 64 } ?? false,
             interactive: interactive,
             pill: pill,
             hovered: $hovered
@@ -80,7 +104,7 @@ struct SplitTabItem: View {
     /// the pointer is over.
     @ViewBuilder
     private var cross: some View {
-        if interactive, let id = hovered, let tab = [left, right].first(where: { $0.id == id }),
+        if interactive, let id = hovered, let tab = tabs.first(where: { $0.id == id }),
            browser.editingTab == nil {
             Image(systemName: "xmark")
                 .font(.system(size: 8, weight: .semibold))
@@ -93,7 +117,7 @@ struct SplitTabItem: View {
                 }
                 .padding(.trailing, 7)
                 .transition(.opacity)
-                .help(tab.id == left.id ? "Close the left page" : "Close the right page")
+                .help("Close this page")
         }
     }
 }
