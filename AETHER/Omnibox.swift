@@ -77,33 +77,37 @@ struct Omnibox: View {
             if let site = browser.siteChip {
                 SiteChip(site: site)
                     .transition(.scale(scale: 0.9, anchor: .leading).combined(with: .opacity))
+            } else {
+                SecurityPill(browser: browser)
             }
             AddressField(browser: browser)
         }
             .animation(Motion.quick, value: browser.siteChip)
             .frame(height: 22)
-            .padding(.horizontal, 22)
+            .padding(.horizontal, 16)
             .padding(.vertical, 14)
             .background {
                 ZStack {
-                    // A slow, almost invisible breath under the field. It is
-                    // the only thing on an empty tab, and a thing that never
-                    // moves at all reads as a picture of an app rather than
-                    // an app.
-                    Breath()
+                    // Modern floating glass appearance: acrylic material blur layered with ground
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(.ultraThinMaterial)
 
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(Palette.ground)
+                        .fill(Palette.ground.opacity(0.72))
+
+                    Breath()
                 }
             }
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .strokeBorder(
-                        refused ? Color.red.opacity(0.35) : Palette.hairline,
+                        refused ? Color.red.opacity(0.35) : Palette.ocean.opacity(0.35),
                         lineWidth: 1
                     )
                     .allowsHitTesting(false)
             )
+            .shadow(color: Palette.ocean.opacity(0.12), radius: 18, y: 4)
             .shadow(color: .black.opacity(0.06), radius: 24, y: 8)
             .modifier(Shake(travel: shake))
             .onChange(of: browser.refusals) { _, _ in
@@ -137,11 +141,20 @@ struct Omnibox: View {
             }
         }
         .padding(6)
-        .background(Palette.ground, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background {
+            ZStack {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Palette.ground.opacity(0.85))
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(Palette.hairline, lineWidth: 1)
+                .strokeBorder(Palette.ocean.opacity(0.22), lineWidth: 1)
         )
+        .shadow(color: Palette.ocean.opacity(0.08), radius: 18, y: 6)
         .shadow(color: .black.opacity(0.07), radius: 20, y: 6)
         .transition(.scale(scale: 0.98, anchor: .top).combined(with: .opacity))
     }
@@ -208,10 +221,14 @@ struct Omnibox: View {
             .padding(.vertical, 9)
             .background {
                 if picked {
-                    RoundedRectangle(cornerRadius: 9, style: .continuous)
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
                         .fill(Palette.wash)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .strokeBorder(Palette.ocean.opacity(0.2), lineWidth: 0.5)
+                        )
                 } else if hovering {
-                    RoundedRectangle(cornerRadius: 9, style: .continuous)
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
                         .fill(Palette.hover)
                 }
             }
@@ -222,6 +239,65 @@ struct Omnibox: View {
 }
 
 /// A site's icon when this Mac has it, or a glass.
+/// Color-coded security and protocol indicator pill inside the floating glass Omnibox.
+private struct SecurityPill: View {
+    @ObservedObject var browser: Browser
+
+    private var targetURL: URL? {
+        if !browser.typed.isEmpty {
+            let text = browser.typed
+            if text.contains("://") || text.hasPrefix("/") || text.hasPrefix("~/") {
+                return URL(string: text)
+            }
+            return nil
+        }
+        return browser.active?.address ?? browser.active?.committed
+    }
+
+    private var badge: (icon: String, text: String?, tint: Color, bg: Color)? {
+        guard let url = targetURL else {
+            return ("magnifyingglass", nil, Palette.muted, Palette.wash.opacity(0.6))
+        }
+
+        let scheme = url.scheme?.lowercased() ?? ""
+        if scheme == "https" {
+            return ("lock.fill", nil, Palette.safe, Palette.safe.opacity(0.14))
+        } else if scheme == "http" {
+            return ("lock.open.fill", "HTTP", Palette.unsafe, Palette.unsafe.opacity(0.14))
+        } else if scheme == "file" {
+            return ("doc.fill", "Local", Palette.ocean, Palette.ocean.opacity(0.14))
+        } else if scheme == "aether" || scheme == "about" {
+            return ("sparkles", "System", Palette.purple, Palette.purple.opacity(0.14))
+        } else {
+            return ("magnifyingglass", nil, Palette.muted, Palette.wash.opacity(0.6))
+        }
+    }
+
+    var body: some View {
+        if let badge {
+            HStack(spacing: 4) {
+                Image(systemName: badge.icon)
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(badge.tint)
+                if let text = badge.text {
+                    Text(text)
+                        .font(.system(size: 9.5, weight: .semibold, design: .rounded))
+                        .foregroundStyle(badge.tint)
+                }
+            }
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3.5)
+            .background(badge.bg, in: Capsule())
+            .overlay(
+                Capsule()
+                    .strokeBorder(badge.tint.opacity(0.28), lineWidth: 0.5)
+            )
+            .help(badge.text ?? (badge.icon.contains("lock") ? "Secure Connection" : "Search or enter address"))
+            .transition(.scale(scale: 0.85, anchor: .leading).combined(with: .opacity))
+        }
+    }
+}
+
 private struct SiteIcon: View {
     let site: SearchSite
     var body: some View {
@@ -284,7 +360,7 @@ private struct SiteOfferRow: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 9)
         .background {
-            if hovering { RoundedRectangle(cornerRadius: 9, style: .continuous).fill(Palette.hover) }
+            if hovering { RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Palette.hover) }
         }
         .onHover { hovering = $0 }
         .accessibilityElement(children: .ignore)
