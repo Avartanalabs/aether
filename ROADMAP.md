@@ -72,27 +72,27 @@ v0.0.1 (Clean Foundation) ──► v0.0.2 (Pill Tabs & Hibernation) ──► v
 ---
 
 ### [v0.0.4] — Spatial Multi-Pane Dividers & Active Focus Halos
-*Target: Q1 2027*
+*Completed · Released October 6, 2026*
 
 - **Core Capabilities**:
-  - **Spatial Split View Persistence**: Save and restore arbitrary multi-pane split view states across workspaces and app restarts.
-  - **Keyboard Focus Routing**: Seamless split switching (`⌃⌘←` / `⌃⌘→`) with zero focus loss.
+  - [x] **Spatial Split View Persistence**: Save and restore arbitrary multi-pane split view states across workspaces and app restarts.
+  - [x] **Keyboard Focus Routing**: Seamless split switching (`⌃⌘←` / `⌃⌘→`) with zero focus loss.
 - **UI Transformation**:
-  - **Interactive Gutter Handle**: Replace 1px hairline divider with a smooth rounded gutter containing a central pill grab handle.
-  - **Active Pane Halo**: Glowing 1.5px ocean-purple accent border surrounding the currently active pane, eliminating ambiguity about keyboard target.
-  - **Fluid Split Animations**: Spring-based split pane entry and resizing animations.
+  - [x] **Interactive Gutter Handle**: Replace 1px hairline divider with a smooth rounded gutter containing a central pill grab handle.
+  - [x] **Active Pane Halo**: Glowing 1.5px ocean-purple accent border surrounding the currently active pane, eliminating ambiguity about keyboard target.
+  - [x] **Fluid Split Animations**: Spring-based split pane entry and resizing animations.
 
 ---
 
 ### [v0.0.5] — Spatial Quad-Grid (2x2) & Visual Dock Zones
-*Target: Q1 2027*
+*Completed · Released October 6, 2026*
 
 - **Core Capabilities**:
-  - **2x2 Quadrant Grid**: Support for 3-pane and 4-pane quadrant layouts (`⌥⌘2` dual pane, `⌥⌘3` triple pane, `⌥⌘4` quad grid).
-  - **Synchronized Scrolling Mode (`⌥⌘S`)**: Lock scroll positions across adjacent panes for documentation review, side-by-side translation, and UI diffing.
+  - [x] **2x2 Quadrant Grid**: Support for 3-pane and 4-pane quadrant layouts (`⌥⌘2` dual pane, `⌥⌘3` triple pane, `⌥⌘4` quad grid).
+  - [x] **Synchronized Scrolling Mode (`⌥⌘S`)**: Lock scroll positions across adjacent panes for documentation review, side-by-side translation, and UI diffing.
 - **UI Transformation**:
-  - **Visual Drag-to-Dock Zones**: Semi-transparent ethereal blue drop zones overlaying the viewport when dragging tabs toward window edges or corners.
-  - **Mini-Map Status Pill**: Miniature visual layout indicator in the status line showing active split arrangement.
+  - [x] **Visual Drag-to-Dock Zones**: Semi-transparent ethereal blue drop zones overlaying the viewport when dragging tabs toward window edges or corners.
+  - [ ] **Mini-Map Status Pill**: Miniature visual layout indicator in the status line showing active split arrangement. *(not in 0.0.5)*
 
 ---
 
