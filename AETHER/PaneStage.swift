@@ -682,7 +682,7 @@ extension PaneStage {
                 }
             }
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
             if !finished { pictures = [:] }
             finish()
         }
