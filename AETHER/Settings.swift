@@ -656,6 +656,10 @@ struct SettingsPanel: View {
                 Rule()
                 Shortcut("⇧⌘⌫", "Clear browsing data")
             }
+
+            Text("Portions of Aether derive from Search, © 2026 Office Commun, under the MIT License. See THIRD-PARTY-NOTICES.md.")
+                .font(.system(size: 11))
+                .foregroundStyle(Palette.muted)
         }
     }
 
@@ -664,9 +668,9 @@ struct SettingsPanel: View {
     private var versionTitle: String {
         switch updater.stage {
         case .none: return "Updates"
-        case .fetching(let next): return "Search \(next.version) is downloading…"
-        case .ready(let next): return "Search \(next.version) is ready"
-        case .offered(let next), .waiting(let next): return "Search \(next.version) is out"
+        case .fetching(let next): return "Aether \(next.version) is downloading…"
+        case .ready(let next): return "Aether \(next.version) is ready"
+        case .offered(let next), .waiting(let next): return "Aether \(next.version) is out"
         }
     }
 
@@ -678,7 +682,7 @@ struct SettingsPanel: View {
         case .fetching(let next):
             return next.notes ?? "Quietly, in the background — nothing you have set is touched"
         case .ready(let next):
-            return next.notes ?? "It's there the next time you open Search"
+            return next.notes ?? "It's there the next time you open Aether"
         case .offered(let next):
             return next.notes ?? "Open the disk image, the same as the first time"
         case .waiting(let next):

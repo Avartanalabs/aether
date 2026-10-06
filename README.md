@@ -86,4 +86,4 @@ SEARCH_ARCH=x86_64 ./build.sh   # Intel build, into build/intel
 
 Copyright © 2026 Avartana Labs Inc. All rights reserved.
 
-AETHER is proprietary software; see [LICENSE](LICENSE) for the terms. Licensing enquiries: [avartanalabs.com](https://avartanalabs.com) or `licensing@avartanalabs.com`.
+AETHER is proprietary software, © 2026 Avartana Labs Inc. See [LICENSE](LICENSE) for the terms and [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) for the components it is built on — portions derive from Search, © 2026 Office Commun, under the MIT License. Licensing enquiries: [avartanalabs.com](https://avartanalabs.com) or `licensing@avartanalabs.com`.

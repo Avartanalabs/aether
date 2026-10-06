@@ -5,23 +5,63 @@ All Rights Reserved.
 
 CONFIDENTIAL & PROPRIETARY.
 
-This software, its source code, assets, documentation, and associated binaries (the "Software") are the exclusive and confidential proprietary property of Avartana Labs Inc. ("Avartana Labs").
+This License covers the AETHER application: the changes, additions, assets and
+documentation contributed by Avartana Labs Inc. (together, the "Avartana
+Software"), built upon components that came before it. Third-party components
+are licensed to you by their own terms, reproduced in THIRD-PARTY-NOTICES.md
+(the "Third-Party Notices"), which is part of this License.
 
 1. RESTRICTION OF USE
-No license, whether express, implied, statutory, or otherwise, is granted to any individual or entity to use, reproduce, modify, merge, publish, distribute, sublicense, publicly display, or create derivative works of this Software, in whole or in part, without the prior express written consent and commercial license granted by Avartana Labs Inc.
+No license, whether express, implied, statutory, or otherwise, is granted to
+any individual or entity to use, reproduce, modify, merge, publish, distribute,
+sublicense, publicly display, or create derivative works of the Avartana
+Software, in whole or in part, without the prior express written consent and
+commercial license granted by Avartana Labs Inc.
 
 2. PROHIBITED CONDUCT
-Without limiting the generality of Section 1, the following acts are strictly prohibited:
-   a. Any public or private redistribution, hosting, mirroring, or forking of this source code or compiled binaries;
-   b. Decompilation, disassembly, reverse engineering, or attempting to discover the source code, structure, or algorithms of the binary components, except to the extent permitted by mandatory applicable law;
-   c. Use of the Software or any portion thereof in commercial products, software-as-a-service (SaaS) offerings, or enterprise deployments without an executed commercial license agreement with Avartana Labs Inc.;
-   d. Sublicensing, renting, leasing, selling, or conveying rights in the Software to third parties;
-   e. Removing, altering, or obscuring any copyright, trademark, attribution, or proprietary rights notices placed on or within the Software.
+Without limiting the generality of Section 1, the following acts are strictly
+prohibited:
+   a. Any public or private redistribution, hosting, mirroring, or forking of
+      the Avartana Software's source code or compiled binaries;
+   b. Decompilation, disassembly, reverse engineering, or attempting to
+      discover the source code, structure, or algorithms of the binary
+      components, except to the extent permitted by mandatory applicable law;
+   c. Use of the Avartana Software or any portion thereof in commercial
+      products, software-as-a-service (SaaS) offerings, or enterprise
+      deployments without an executed commercial license agreement with
+      Avartana Labs Inc.;
+   d. Sublicensing, renting, leasing, selling, or conveying rights in the
+      Avartana Software to third parties;
+   e. Removing, altering, or obscuring any copyright, trademark, attribution,
+      or proprietary rights notices placed on or within the Software,
+      including the Third-Party Notices.
 
-3. INTELLECTUAL PROPERTY RIGHTS
-All title, ownership rights, trademarks, patents, and intellectual property rights in and to the Software remain solely and exclusively with Avartana Labs Inc. Unauthorized possession, copying, or use is a violation of copyright, trade secret, and international treaty protections.
+3. INTELLECTUAL PROPERTY
+All title, ownership rights, trademarks, patents and intellectual property
+rights in and to the Avartana Software remain solely and exclusively with
+Avartana Labs Inc. Title to third-party components remains with their
+respective owners and is governed by the Third-Party Notices. Unauthorized
+possession, copying, or use of the Avartana Software is a violation of
+copyright, trade secret, and international treaty protections.
 
-4. NO WARRANTY
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. IN NO EVENT SHALL AVARTANA LABS INC., ITS DIRECTORS, OFFICERS, EMPLOYEES, OR AGENTS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+4. THIRD-PARTY COMPONENTS
+The Software includes material derived from Search
+(https://github.com/driceroland/Search), Copyright (c) 2026 Office Commun,
+licensed under the MIT License. That license and its copyright notice are
+reproduced in full in THIRD-PARTY-NOTICES.md and must be included in every
+copy or substantial portion of the Software, as the MIT License requires.
+Nothing in this License restricts the rights you have under the Third-Party
+Notices, and nothing in this License grants rights in the Avartana Software
+beyond those stated here.
 
-For licensing inquiries or enterprise permissions, contact: legal@avartanalabs.com
+5. NO WARRANTY
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. IN NO EVENT SHALL
+AVARTANA LABS INC., ITS DIRECTORS, OFFICERS, EMPLOYEES, OR AGENTS BE LIABLE
+FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE
+OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+For licensing inquiries or enterprise permissions, contact:
+legal@avartanalabs.com

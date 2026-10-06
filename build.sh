@@ -82,6 +82,9 @@ cp "$BINARY" "$APP/Contents/MacOS/$NAME"
 # The AppleScript dictionary (Scripting.swift): read-only, tabs' addresses
 # and titles. The plist below points to it.
 cp Aether.sdef "$APP/Contents/Resources/"
+# The notices that must travel with the app: our license, and the MIT text
+# for the code Aether was built from.
+cp LICENSE THIRD-PARTY-NOTICES.md "$APP/Contents/Resources/"
 
 # Symbols stay out of the app. The linker leaves every function's name and a
 # map back to the source in the binary — 15,000 entries, more than half of
