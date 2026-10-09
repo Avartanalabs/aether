@@ -4,6 +4,7 @@ AETHER is an independent, keyboard-driven, ultra-lightweight web browser develop
 
 All inquiries, issues, and feature planning are managed here:
 - **Repository**: Avartana Labs Organization
+- **Board, timeline & issue tracking**: [AETHER — Roadmap](https://github.com/orgs/Avartanalabs/projects/1)
 - **Live Roadmap & Releases**: [aether.avartanalabs.com/roadmap](https://aether.avartanalabs.com/roadmap)
 - **Contact**: hello@avartanalabs.com
 
